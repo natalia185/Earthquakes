@@ -1,0 +1,33 @@
+---
+title: "Sprawozdanie 1"
+author: "Klaudia Janicka 262268 i Natalia Iwańska 262270"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Wstęp
+
+Tu będzie: opis danych w tym opis zmiennych, możliwe wartości zmiennych, skąd pochodzą dane, jaki jest cel analizy, pytania badawcze.
+
+
+## Dane
+
+```{r}
+
+earthquakes = read.csv("Earthquakes.csv")
+
+
+```
+
+
+Wczytanie danych, nadanie odpowiednich etykiet, typów oraz wartości, obsługę braków danych.
+
+
+## Analiza danych
+
+
+## Wnioski
