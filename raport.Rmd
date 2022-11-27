@@ -1,5 +1,5 @@
 ---
-title: "Sprawozdanie 1"
+title: "Sprawozdanie  nr 1"
 author: "Klaudia Janicka 262268 i Natalia Iwańska 262270"
 date: "`r Sys.Date()`"
 output: pdf_document
@@ -11,23 +11,26 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Wstęp
 
-Tu będzie: opis danych w tym opis zmiennych, możliwe wartości zmiennych, skąd pochodzą dane, jaki jest cel analizy, pytania badawcze.
+Ninieżjszy raport stanowi analizę danych rzeczywistych dotyczących trzęsień ziemi na przestrzeni lat 1900-2013. Dane pochodzą ze strony [kaggle.com](https://www.kaggle.com/datasets/varunsaikanuri/earthquakes-from-1900-2013).
+
+- skąd pochodzą dane, jaki jest cel analizy, pytania badawcze.
 
 
-## Dane
+## Opis zmiennych
 
-```{r}
+- opis danych w tym opis zmiennych, możliwe wartości zmiennych
+
+
+## Analiza danych
+
+- Wczytanie danych, nadanie odpowiednich etykiet, typów oraz wartości, obsługę braków danych
+
+```{r include=FALSE}
 
 earthquakes = read.csv("Earthquakes.csv")
 
 
 ```
-
-
-Wczytanie danych, nadanie odpowiednich etykiet, typów oraz wartości, obsługę braków danych.
-
-
-## Analiza danych
 
 
 ## Wnioski
