@@ -93,13 +93,30 @@ eq_to_time <- data.frame(number=table(time_rounded))
 colnames(eq_to_time)[1] <- 'czas'
 colnames(eq_to_time)[2] <- 'częstość'
 
-ggplot(eq_to_time,aes(x=czas,y=częstość)) + geom_col(color='hotpink') + theme(axis.text.x = element_text(angle = 90))
+ggplot(eq_to_time,aes(x=czas,y=częstość)) + geom_col(fill='hotpink') + theme(axis.text.x = element_text(angle = 90))
 
 #Czyli pora dnia też nie, sad :/
 
 #Głębokość(?) a siła trzęsienia
+dfmd <- data.frame(earthquakes$mag,earthquakes$depth)
+colnames(dfmd)[1] <- 'siła'
+colnames(dfmd)[2] <- 'głębokość'
 
-ggplot(earthquakes,aes(x=depth,y=mag),color=) + geom_point()
+ggplot(dfmd,aes(x=głębokość,y=siła)) + geom_point(color='hotpink')
+# nie ma korelacji między siłą a głębokością
+
+# Siła a lata
+df_mag_years <- data.frame(earthquakes$mag,years)
+colnames(df_mag_years)[1] <- 'lata'
+colnames(df_mag_years)[2] <- 'siła'
+ggplot(df_mag_years,aes(y=lata,x=siła)) + geom_point(color='hotpink') + scale_x_discrete(breaks=seq(1900, 2013, 15))
+
+### Boxploty ###
+#Głębokość
+ggplot(earthquakes,aes(x=depth)) + geom_boxplot(color='hotpink')
+
+#Siła
+ggplot(earthquakes,aes(x=mag)) + geom_boxplot(color='hotpink')
 
 
 ### For later ERRORS by Nans 
