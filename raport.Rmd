@@ -11,9 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Wstęp
 
-Ninieżjszy raport stanowi analizę danych rzeczywistych dotyczących trzęsień ziemi na przestrzeni lat 1900-2013. Dane pochodzą ze strony [kaggle.com](https://www.kaggle.com/datasets/varunsaikanuri/earthquakes-from-1900-2013).
-
-- skąd pochodzą dane, jaki jest cel analizy, pytania badawcze.
+Niniejszy raport stanowi analizę danych rzeczywistych dotyczących trzęsień ziemi na przestrzeni lat 1900-2013. Dane pochodzą ze strony [kaggle.com](https://www.kaggle.com/datasets/varunsaikanuri/earthquakes-from-1900-2013).
+Celem naszej analizy jest odpowiedzenie na pytanie jakie regiony są najbardziej narażone oraz zbadanie jakie czynniki mają wpływ na występowanie trzęsień ziemi.
 
 
 ## Opis zmiennych
@@ -26,8 +25,6 @@ Ninieżjszy raport stanowi analizę danych rzeczywistych dotyczących trzęsień
 - Wczytanie danych, nadanie odpowiednich etykiet, typów oraz wartości, obsługę braków danych
 
 ```{r include=FALSE}
-
-earthquakes = read.csv("Earthquakes.csv")
 
 
 ```
