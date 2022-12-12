@@ -2,9 +2,11 @@ install.packages('stringr')
 install.packages('reshape')
 install.packages("maps")
 install.packages("tidyverse")
-install.packages( "rgeos","lubridate")                 
+install.packages( "rgeos","lubridate")
+install.packages('corrplot')
 
-library("ggplot2")  
+library("ggplot2")
+library('corrplot')
 theme_set(theme_bw())
 library("sf")
 library("rnaturalearth")
@@ -54,6 +56,8 @@ ggplot() +
   ) 
 
 ### Correlations ###
+
+#### Pojedyncze bo tak o ####
 
 ## Liczba stacji w stosunku do lat
 years <- vapply(strsplit(earthquakes$Date,"-"), `[`, 1, FUN.VALUE=character(1))
@@ -110,6 +114,23 @@ df_mag_years <- data.frame(earthquakes$mag,years)
 colnames(df_mag_years)[1] <- 'lata'
 colnames(df_mag_years)[2] <- 'siła'
 ggplot(df_mag_years,aes(y=lata,x=siła)) + geom_point(color='hotpink') + scale_x_discrete(breaks=seq(1900, 2013, 15))
+
+### OGÓLNY ZESTAW KORELACJI BO JEST FUNKCJA :D #####
+df_allnum <- earthquakes
+df_allnum$years <- years
+keeps <- c("depth","mag",'years',"nst",'longitude','latitude')
+
+df_allnum$years <- as.numeric(as.character(df_allnum$years))
+
+df_allnum <- df_allnum[keeps]
+df_allnum <- transform(df_allnum,as.numeric(years))
+
+############ Jak ogarniemy braki - usunąć paramter use ##########
+corrplot(cor(df_allnum,use="pairwise.complete.obs"),method = 'color',col = COL2('PuOr'))
+
+str(earthquakes['longitude','latitude','mag','depth','nst'])
+test3 <- earthquakes[c("depth","mag","nst",'longitude','latitude')]
+corrplot(test3,method = 'number')
 
 ### Boxploty ###
 #Głębokość
