@@ -20,6 +20,7 @@ library(reshape)
 library(maps)
 library(tidyverse)
 library(lubridate)
+library(dplyr)
 map(database = "world")
 
 earthquakes = read.csv("Earthquakes.csv")
@@ -32,6 +33,7 @@ miejsce <- vapply(strsplit(earthquakes$place,","), `[`, 2, FUN.VALUE=character(1
 most_fr_eq <- data.frame(number=rev(sort(table(miejsce)))[1:12])
 colnames(most_fr_eq)[1] <- 'miejsce'
 colnames(most_fr_eq)[2] <- 'częstość'
+most_fr_eq <- most_fr_eq %>% drop_na()
 
 ggplot(most_fr_eq, aes(x = miejsce, y = częstość)) + geom_col(fill = 'hotpink') + 
   theme(axis.text.x = element_text(angle = 90)) + geom_text(aes(label = częstość), nudge_y = -20, col='white')
@@ -40,6 +42,7 @@ ggplot(most_fr_eq, aes(x = miejsce, y = częstość)) + geom_col(fill = 'hotpink
 eq_points_map_lg <- earthquakes$longitude
 eq_points_map_lat <- earthquakes$latitude
 dfmap <- data.frame(eq_points_map_lat,eq_points_map_lg)
+dfmap <- dfmap %>% drop_na()
 
 world <- map_data("world")
 
@@ -63,6 +66,7 @@ ggplot() +
 years <- vapply(strsplit(earthquakes$Date,"-"), `[`, 1, FUN.VALUE=character(1))
 df_nst_years <- data.frame(years,earthquakes$nst)
 colnames(df_nst_years)[2] <- 'nst'
+df_nst_years <- df_nst_years %>% drop_na()
 
 ggplot(df_nst_years,aes(x=years,y=nst)) + geom_point(color='hotpink') + scale_x_discrete(breaks=seq(1900, 2013, 10))
 
@@ -72,6 +76,7 @@ ggplot(df_nst_years,aes(x=years,y=nst)) + geom_point(color='hotpink') + scale_x_
 eq_to_years <- data.frame(number=sort(table(years)))
 colnames(eq_to_years)[1] <- 'lata'
 colnames(eq_to_years)[2] <- 'częstość'
+eq_to_years <- eq_to_years %>% drop_na()
 
 ggplot(eq_to_years,aes(x=lata,y=częstość)) + geom_col(color='hotpink') + scale_x_discrete(breaks=seq(1900, 2013, 15)) + theme(axis.text.x = element_text(angle = 90))
 
@@ -81,6 +86,7 @@ miesiace <- vapply(strsplit(earthquakes$Date,"-"), `[`, 2, FUN.VALUE=character(1
 eq_to_months <- data.frame(number=table(miesiace))
 colnames(eq_to_months)[1] <- 'miesiace'
 colnames(eq_to_months)[2] <- 'częstość'
+eq_to_months <- eq_to_months %>% drop_na()
 
 ggplot(eq_to_months,aes(x=miesiace,y=częstość)) + geom_col(fill='hotpink') + theme(axis.text.x = element_text(angle = 90))
 
@@ -96,24 +102,31 @@ for (i in 1:length(earthquakes$Time)){
 eq_to_time <- data.frame(number=table(time_rounded))
 colnames(eq_to_time)[1] <- 'czas'
 colnames(eq_to_time)[2] <- 'częstość'
+eq_to_time <- eq_to_time %>% drop_na()
 
 ggplot(eq_to_time,aes(x=czas,y=częstość)) + geom_col(fill='hotpink') + theme(axis.text.x = element_text(angle = 90))
 
 #Czyli pora dnia też nie, sad :/
 
+
 #Głębokość(?) a siła trzęsienia
 dfmd <- data.frame(earthquakes$mag,earthquakes$depth)
 colnames(dfmd)[1] <- 'siła'
 colnames(dfmd)[2] <- 'głębokość'
+dfmd <- dfmd %>% drop_na()
 
 ggplot(dfmd,aes(x=głębokość,y=siła)) + geom_point(color='hotpink')
 # nie ma korelacji między siłą a głębokością
 
+
 # Siła a lata
 df_mag_years <- data.frame(earthquakes$mag,years)
-colnames(df_mag_years)[1] <- 'lata'
-colnames(df_mag_years)[2] <- 'siła'
-ggplot(df_mag_years,aes(y=lata,x=siła)) + geom_point(color='hotpink') + scale_x_discrete(breaks=seq(1900, 2013, 15))
+colnames(df_mag_years)[1] <- 'siła'
+colnames(df_mag_years)[2] <- 'lata'
+df_mag_years <- df_mag_years %>% drop_na()
+
+ggplot(df_mag_years,aes(y=siła,x=lata)) + geom_point(color='hotpink') + scale_x_discrete(breaks=seq(1900, 2013, 15))
+
 
 ### OGÓLNY ZESTAW KORELACJI BO JEST FUNKCJA :D #####
 df_allnum <- earthquakes
@@ -124,26 +137,18 @@ df_allnum$years <- as.numeric(as.character(df_allnum$years))
 
 df_allnum <- df_allnum[keeps]
 df_allnum <- transform(df_allnum,as.numeric(years))
+df_allnum <- df_allnum %>% drop_na()
 
-############ Jak ogarniemy braki - usunąć paramter use ##########
-corrplot(cor(df_allnum,use="pairwise.complete.obs"),method = 'color',col = COL2('PuOr'))
 
-str(earthquakes['longitude','latitude','mag','depth','nst'])
-test3 <- earthquakes[c("depth","mag","nst",'longitude','latitude')]
-corrplot(test3,method = 'number')
+############ Jak ogarniemy braki - usunąć paramter use ########## usunęłam i działa, SUKCES!!!
+corrplot(cor(df_allnum),method = 'color',col = COL2('PuOr'))
+
 
 ### Boxploty ###
+df_mag_depth <- data.frame('mag'=earthquakes$mag, 'depth'=earthquakes$depth) %>% drop_na()
+
 #Głębokość
-ggplot(earthquakes,aes(x=depth)) + geom_boxplot(color='hotpink')
+ggplot(df_mag_depth,aes(x=depth)) + geom_boxplot(color='hotpink')
 
 #Siła
-ggplot(earthquakes,aes(x=mag)) + geom_boxplot(color='hotpink')
-
-
-### For later ERRORS by Nans 
-# https://jezykrwedlugtw.wordpress.com/o-jezyku-r-2/obrobka-danych-w-r/brakujace-dane/
-
-
-
-
-
+ggplot(df_mag_depth,aes(x=mag)) + geom_boxplot(color='hotpink')
