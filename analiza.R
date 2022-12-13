@@ -36,7 +36,9 @@ colnames(most_fr_eq)[2] <- 'częstość'
 most_fr_eq <- most_fr_eq %>% drop_na()
 
 ggplot(most_fr_eq, aes(x = miejsce, y = częstość)) + geom_col(fill = 'hotpink') + 
-  theme(axis.text.x = element_text(angle = 90)) + geom_text(aes(label = częstość), nudge_y = -20, col='white')
+  theme(axis.text.x = element_text(angle = 90)) + geom_text(aes(label = częstość), nudge_y = -20, col='white') +
+  labs(x='kraj', y='liczba wystąpień')
+
 
 ### Mapka ###
 eq_points_map_lg <- earthquakes$longitude
@@ -56,7 +58,7 @@ ggplot() +
     data = dfmap,
     aes(eq_points_map_lg, eq_points_map_lat, color = 'red'),
     alpha = 0.7
-  ) 
+  ) + labs(x='', y='')
 
 ### Correlations ###
 
@@ -104,7 +106,8 @@ colnames(eq_to_time)[1] <- 'czas'
 colnames(eq_to_time)[2] <- 'częstość'
 eq_to_time <- eq_to_time %>% drop_na()
 
-ggplot(eq_to_time,aes(x=czas,y=częstość)) + geom_col(fill='hotpink') + theme(axis.text.x = element_text(angle = 90))
+ggplot(eq_to_time,aes(x=czas,y=częstość)) + geom_col(fill='hotpink') + theme(axis.text.x = element_text(angle = 90)) +
+  labs(y='liczba wystąpień')
 
 #Czyli pora dnia też nie, sad :/
 

@@ -6,28 +6,119 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
-## Wstęp
+## 1. Wstęp
 
-Niniejszy raport stanowi analizę danych rzeczywistych dotyczących trzęsień ziemi na przestrzeni lat 1900-2013. Dane pochodzą ze strony [kaggle.com](https://www.kaggle.com/datasets/varunsaikanuri/earthquakes-from-1900-2013).
+Niniejszy raport stanowi analizę danych rzeczywistych dotyczących trzęsień ziemi o skali wydarzenia powyżej 6 na przestrzeni lat 1900-2013. Dane pochodzą ze strony [kaggle.com](https://www.kaggle.com/datasets/varunsaikanuri/earthquakes-from-1900-2013), gdzie źródłem danych jest United States Geological Survey.
+
 Celem naszej analizy jest odpowiedzenie na pytanie jakie regiony są najbardziej narażone oraz zbadanie jakie czynniki mają wpływ na występowanie trzęsień ziemi.
 
 
-## Opis zmiennych
+### 1.1 Opis zmiennych
+Do analizy wykorzystujemy dane zawarte w kolumnach:
 
-- opis danych w tym opis zmiennych, możliwe wartości zmiennych
+- $place$ - tekstowy opis regionu geograficznego w pobliżu wydarzenia;
+
+- $latitude$ - szerokość geograficzna podana w stopniach, przyjmuje wrtości z przedziału $[-90, 90]$, gdzie wartości ujemne oznaczają południowe szerokści;
+
+- $longitude$ - długość geograficzna podana w stopniach, przyjmuje wartości z przedziału $[-180, 180]$, gdzie wartości ujemne dotyczą zachodnich długości;
+
+- $mag$ - skala wydarzenia;
+
+- $nst$ - liczba stacji sejsmicznych użytych do określenia lokalizacji trzęsienia;
+
+- $time$ - czas wystapienia trzęsienia;
+
+- $depth$ - głębokość zdarzenia w kilometrach;
 
 
-## Analiza danych
+### 1.2 Obsługa błędów
+Wiersze z brakami danych usuwamy za pomocą funkcji drop_na() z biblioteki dplyr.
+
+## 2. Analiza danych
 
 - Wczytanie danych, nadanie odpowiednich etykiet, typów oraz wartości, obsługę braków danych
 
 ```{r include=FALSE}
+library("ggplot2")
+library('corrplot')
+library("sf")
+library("rnaturalearth")
+library("rnaturalearthdata")
+library(rgeos)
+library(ggplot2)
+library(stringr)
+library(reshape)
+library(maps)
+library(tidyverse)
+library(lubridate)
+library(dplyr)
 
+theme_set(theme_bw())
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+earthquakes = read.csv("Earthquakes.csv")
+
+```
+
+### 2.1 Mapa świata z naniesionymi miejscami trzęsień ziemii
+```{r echo=FALSE}
+### Mapka ###
+eq_points_map_lg <- earthquakes$longitude
+eq_points_map_lat <- earthquakes$latitude
+dfmap <- data.frame(eq_points_map_lat,eq_points_map_lg)
+dfmap <- dfmap %>% drop_na()
+
+world <- map_data("world")
+
+ggplot() +
+  geom_map(
+    data = world, map = world,
+    aes(long, lat, map_id = region),
+    color = "white", fill = "lightgray", size = 0.1
+  ) +
+  geom_point(
+    data = dfmap,
+    aes(eq_points_map_lg, eq_points_map_lat, color = 'red'),
+    alpha = 0.7
+  ) + labs(x='', y='')
+```
+
+
+### 2.2 Wykres słupkowy ilości wystąpień zdarzenia dla 12 najbardziej narażonych miejsc (?)
+```{r, echo=FALSE}
+### Histogram ###
+# 12 najczęstszych miejsc wybrane #
+miejsce <- vapply(strsplit(earthquakes$place,","), `[`, 2, FUN.VALUE=character(1))
+
+most_fr_eq <- data.frame(number=rev(sort(table(miejsce)))[1:12])
+colnames(most_fr_eq)[1] <- 'miejsce'
+colnames(most_fr_eq)[2] <- 'częstość'
+most_fr_eq <- most_fr_eq %>% drop_na()
+
+ggplot(most_fr_eq, aes(x = miejsce, y = częstość)) + geom_col(fill = 'hotpink') + 
+  theme(axis.text.x = element_text(angle = 90)) + geom_text(aes(label = częstość), nudge_y = -20, col='white') +
+  labs(x='kraj', y='liczba wystąpień')
+```
+
+### 2.3 Macierz korelacji
+```{r echo=FALSE}
+years <- vapply(strsplit(earthquakes$Date,"-"), `[`, 1, FUN.VALUE=character(1))
+df_allnum <- earthquakes
+df_allnum$years <- years
+keeps <- c("depth","mag",'years',"nst",'longitude','latitude')
+
+df_allnum$years <- as.numeric(as.character(df_allnum$years))
+
+df_allnum <- df_allnum[keeps]
+df_allnum <- transform(df_allnum,as.numeric(years))
+df_allnum <- df_allnum %>% drop_na()
+
+corrplot(cor(df_allnum),method = 'color',col = COL2('PuOr'))
 
 ```
 
 
-## Wnioski
+## 3. Wnioski
