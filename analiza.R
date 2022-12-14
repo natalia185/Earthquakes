@@ -144,7 +144,8 @@ df_allnum <- df_allnum %>% drop_na()
 
 
 ############ Jak ogarniemy braki - usunąć paramter use ########## usunęłam i działa, SUKCES!!!
-corrplot(cor(df_allnum),method = 'color',col = COL2('PuOr'))
+
+corrplot(cor(df_allnum),method = 'number',col = COL2('PuOr'))
 
 
 ### Boxploty ###
