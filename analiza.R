@@ -119,7 +119,7 @@ colnames(dfmd)[2] <- 'głębokość'
 dfmd <- dfmd %>% drop_na()
 
 ggplot(dfmd,aes(x=głębokość,y=siła)) + geom_point(color='hotpink')
-# nie ma korelacji między siłą a głębokością
+# nie ma korelacji między siłą a głębokością, ale to widać na macierzy korelacji więc naura
 
 
 # Siła a lata
