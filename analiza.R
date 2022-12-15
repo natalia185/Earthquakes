@@ -6,9 +6,9 @@ install.packages( "rgeos","lubridate")
 install.packages('corrplot')
 install.packages('bookdown')
 
-library("ggplot2")
+#library("ggplot2")
 library('corrplot')
-theme_set(theme_bw())
+#theme_set(theme_bw())
 library("sf")
 library("rnaturalearth")
 library("rnaturalearthdata")
@@ -23,9 +23,12 @@ library(tidyverse)
 library(lubridate)
 library(dplyr)
 map(database = "world")
-
+library(knitr)
 earthquakes = read.csv("Earthquakes.csv")
 
+#typy danych w tabelce
+df_type <- sapply(earthquakes, class)
+kable(df_type, col.names=c('typ'))
 
 ### Histogram ###
 # 12 najczęstszych miejsc wybrane #

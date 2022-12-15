@@ -6,6 +6,8 @@ output: pdf_document
 header-includes:
  \usepackage{float}
  \floatplacement{figure}{H}
+ \renewcommand{\figurename}{Wykres}
+ \renewcommand{\tablename}{Tabela}
 ---
 
 ```{r setup, include=FALSE}
@@ -22,6 +24,22 @@ Celem naszej analizy jest odpowiedzenie na pytanie jakie regiony są najbardziej
 
 
 ### 1.1 Opis zmiennych
+Typy danych występujących w poszczególnych kolumnach:
+
+```{r, echo=FALSE, results='asis', fig.cap='\\label{tabela}"Typy zmiennych dla danych zawartych pliku."'}
+library(knitr)
+earthquakes = read.csv("Earthquakes.csv")
+df_type <- sapply(earthquakes, class)
+kable(df_type, col.names=c('typ'))
+```
+Typy zawarte w tabeli \ref{tabela} oznaczają odpowiednio:
+
+integer - typ całkowity, który przyjmuje wartości całkowite,
+
+numeric - typ zmiennoprzecinkowy, który przyjmuje wartości ułamkowe,
+
+character - typ znakowy, przechowuje łańcuchy tekstowe.
+
 Do analizy wykorzystujemy dane zawarte w kolumnach:
 
 - $place$ - tekstowy opis regionu geograficznego w pobliżu zdarzenia;
@@ -37,16 +55,6 @@ gdzie jako zdarzenie rozumiemy wystąpienie trzęsienia ziemi.
 
 Jako zmienne kategoryczne uznajemy zmienną $place$, która po transformacji wskazuje na kraj, w którym zdarzenie miało miejsce oraz $date$, która po transformacji oznacza miesiąc zajścia zdarzenia. Pozostałe zmienne to zmiennne ciągłe. (Tak myślę, ale może być inaczej;;; brzmi sensownie)
 
-Typy danych występujących w poszczególnych kolumnach:
-
-```{r, echo=FALSE}
-earthquakes = read.csv("Earthquakes.csv")
-str(earthquakes) #### Nie wiem czy to chcemy bo wygląda trochę obleśnie, ale mówi jakie są typy danych w datasecie, jak fujka to usuń, jak nie fujka to opiszemy :)))
-```
-
-int - typ całkowity, który przyjmuje wartości całkowite
-num - typ zmiennoprzecinkowy, który przyjmuje wartości ułamkowe 
-char - typ znakowy, przechowuje łańcuchy tekstowe
 
 ### 1.2 Obsługa błędów
 Wiersze z brakami danych usuwamy za pomocą funkcji drop_na() z biblioteki dplyr.
@@ -54,6 +62,7 @@ Wiersze z brakami danych usuwamy za pomocą funkcji drop_na() z biblioteki dplyr
 ## 2. Analiza danych
 
 ```{r include=FALSE}
+# łysy chce alfabetycznie i wszystkie biblioteki w jednym miejscu <- do zrobienia
 library("ggplot2")
 library('corrplot')
 library("sf")
@@ -100,7 +109,7 @@ ggplot() +
   ) + labs(x='', y='')
 ```
 
-Z powyższego wykresu i posiadanej wiedzy z zakresu geografii, jesteśmy w stanie stwierdzić, że najbardziej narażone są między innymi Chile, Japonia i inne kraje azjatyckie. 
+Z powyższego wykresu \ref{world} i posiadanej wiedzy z zakresu geografii, jesteśmy w stanie stwierdzić, że najbardziej narażone są między innymi Chile, Japonia i inne kraje azjatyckie. 
 
 ```{r echo=FALSE, fig.cap="\\label{barplot1}Wykres słupkowy dla 12 najbardziej narażonych miejsc",fig.width=5, fig.height=3.5}
 # 12 najczęstszych miejsc wybrane #
