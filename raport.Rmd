@@ -44,6 +44,10 @@ earthquakes = read.csv("Earthquakes.csv")
 str(earthquakes) #### Nie wiem czy to chcemy bo wygląda trochę obleśnie, ale mówi jakie są typy danych w datasecie, jak fujka to usuń, jak nie fujka to opiszemy :)))
 ```
 
+int - typ całkowity, który przyjmuje wartości całkowite
+num - typ zmiennoprzecinkowy, który przyjmuje wartości ułamkowe 
+char - typ znakowy, przechowuje łańcuchy tekstowe
+
 ### 1.2 Obsługa błędów
 Wiersze z brakami danych usuwamy za pomocą funkcji drop_na() z biblioteki dplyr.
 
@@ -91,7 +95,7 @@ ggplot() +
   ) +
   geom_point(
     data = dfmap,
-    aes(eq_points_map_lg, eq_points_map_lat, color = 'red'),
+    aes(eq_points_map_lg, eq_points_map_lat, color = 'pink'),
     alpha = 0.7
   ) + labs(x='', y='')
 ```
