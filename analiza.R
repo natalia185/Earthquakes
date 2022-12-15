@@ -4,6 +4,7 @@ install.packages("maps")
 install.packages("tidyverse")
 install.packages( "rgeos","lubridate")
 install.packages('corrplot')
+install.packages('bookdown')
 
 library("ggplot2")
 library('corrplot')

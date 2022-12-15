@@ -2,11 +2,15 @@
 title: "Sprawozdanie  nr 1"
 author: "Klaudia Janicka 262268 i Natalia Iwańska 262270"
 date: "`r Sys.Date()`"
-output: pdf_document
+output: pdf_document 
+header-includes:
+ \usepackage{float}
+ \floatplacement{figure}{H}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(fig.width=5, fig.height=3) 
 pdf.options(encoding = 'CP1250')
 ```
 
@@ -32,6 +36,8 @@ Do analizy wykorzystujemy dane zawarte w kolumnach:
 gdzie jako zdarzenie rozumiemy wystąpienie trzęsienia ziemi.
 
 Jako zmienne kategoryczne uznajemy zmienną $place$, która po transformacji wskazuje na kraj, w którym zdarzenie miało miejsce oraz $date$, która po transformacji oznacza miesiąc zajścia zdarzenia. Pozostałe zmienne to zmiennne ciągłe. (Tak myślę, ale może być inaczej;;; brzmi sensownie)
+
+Typy danych występujących w poszczególnych kolumnach:
 
 ```{r, echo=FALSE}
 earthquakes = read.csv("Earthquakes.csv")
@@ -87,12 +93,12 @@ ggplot() +
     data = dfmap,
     aes(eq_points_map_lg, eq_points_map_lat, color = 'red'),
     alpha = 0.7
-  ) + labs(x='', y='') + ggtitle('Mapa świata z naniesionymi miejscami trzęsień ziemii')
+  ) + labs(x='', y='')
 ```
 
 Z powyższego wykresu i posiadanej wiedzy z zakresu geografii, jesteśmy w stanie stwierdzić, że najbardziej narażone są między innymi Chile, Japonia i inne kraje azjatyckie. 
 
-```{r echo=FALSE, fig.cap="\\label{barplot1}Wykres słupkowy dla 12 najbardziej narażonych miejsc"}
+```{r echo=FALSE, fig.cap="\\label{barplot1}Wykres słupkowy dla 12 najbardziej narażonych miejsc",fig.width=5, fig.height=3.5}
 # 12 najczęstszych miejsc wybrane #
 miejsce <- vapply(strsplit(earthquakes$place,","), `[`, 2, FUN.VALUE=character(1))
 
@@ -111,7 +117,7 @@ Wykres \ref{barplot1} potwierdza nasze wcześniejsze przypuszczenia oparte o wyk
 
 ### 2.2 Macierz korelacji
 
-```{r corrpl, echo=FALSE, fig.cap="\\label{corrpl}Macierz korelacji coś tam coś tam"}
+```{r corrpl, echo=FALSE, fig.cap="\\label{corrpl}Macierz korelacji "}
 years <- vapply(strsplit(earthquakes$Date,"-"), `[`, 1, FUN.VALUE=character(1))
 df_allnum <- earthquakes
 df_allnum$years <- years
@@ -139,7 +145,7 @@ ggplot(df_nst_years,aes(x=years,y=nst)) + geom_point(color='hotpink') +labs(x='l
 
 Zaskakiwać może fakt, że głębokość i siła trzęsienia nie są ze sobą silnie skorelowane, co możemy zobaczyć na wykresie poniżej: 
 
-```{r, echo=FALSE, fig.cap="\\label{depth_mag}Scatterplot zależności siły trzęsienia od jego głębokości"}
+```{r, echo=FALSE, fig.cap="\\label{depth_mag}Scatterplot zależności siły trzęsienia od jego głębokości", fig.pos="H"}
 dfmd <- data.frame(earthquakes$mag,earthquakes$depth)
 colnames(dfmd)[1] <- 'siła'
 colnames(dfmd)[2] <- 'głębokość'
