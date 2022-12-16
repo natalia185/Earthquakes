@@ -2,7 +2,9 @@
 title: "Sprawozdanie  nr 1"
 author: "Klaudia Janicka 262268 i Natalia Iwańska 262270"
 date: "`r Sys.Date()`"
-output: pdf_document 
+output: 
+  pdf_document:
+    number_sections: true
 header-includes:
  \usepackage{float}
  \floatplacement{figure}{H}
@@ -16,21 +18,36 @@ knitr::opts_chunk$set(fig.width=5, fig.height=3)
 pdf.options(encoding = 'CP1250')
 ```
 
-## 1. Wstęp
+```{r echo=FALSE}
+library(corrplot)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(knitr)
+library(maps)
+library(reshape)
+library(rgeos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(stringr)
+library(tidyverse)
+```
+
+
+# Wstęp
 
 Niniejszy raport stanowi analizę danych rzeczywistych dotyczących trzęsień ziemi o skali wydarzenia powyżej 6 na przestrzeni lat 1900-2013. Dane pochodzą ze strony [kaggle.com](https://www.kaggle.com/datasets/varunsaikanuri/earthquakes-from-1900-2013). Zgodnie z informacjami zawartymi na podanej stronie źródłem danych jest United States Geological Survey.
 
 Celem naszej analizy jest odpowiedzenie na pytanie jakie regiony są najbardziej narażone, zbadanie jakie czynniki mają wpływ na występowanie trzęsień ziemi oraz, czy poszczególne cechy trzęsienia są ze sobą powiązane. 
 
 
-### 1.1 Opis zmiennych
+## Opis zmiennych
 Typy danych występujących w poszczególnych kolumnach:
 
-```{r, echo=FALSE, results='asis', fig.cap='\\label{tabela}"Typy zmiennych dla danych zawartych pliku."'}
-library(knitr)
+```{r, echo=FALSE, results='asis'}
 earthquakes = read.csv("Earthquakes.csv")
 df_type <- sapply(earthquakes, class)
-kable(df_type, col.names=c('typ'))
+kable(df_type, col.names=c('typ'), caption="\\label{tabela}Typy zmiennych dla danych zawartych w pliku.")
 ```
 Typy zawarte w tabeli \ref{tabela} oznaczają odpowiednio:
 
@@ -56,34 +73,18 @@ gdzie jako zdarzenie rozumiemy wystąpienie trzęsienia ziemi.
 Jako zmienne kategoryczne uznajemy zmienną $place$, która po transformacji wskazuje na kraj, w którym zdarzenie miało miejsce oraz $date$, która po transformacji oznacza miesiąc zajścia zdarzenia. Pozostałe zmienne to zmiennne ciągłe. (Tak myślę, ale może być inaczej;;; brzmi sensownie)
 
 
-### 1.2 Obsługa błędów
+## Obsługa błędów
 Wiersze z brakami danych usuwamy za pomocą funkcji drop_na() z biblioteki dplyr.
 
-## 2. Analiza danych
+# Analiza danych
 
 ```{r include=FALSE}
-# łysy chce alfabetycznie i wszystkie biblioteki w jednym miejscu <- do zrobienia
-library("ggplot2")
-library('corrplot')
-library("sf")
-library("rnaturalearth")
-library("rnaturalearthdata")
-library(rgeos)
-library(ggplot2)
-library(stringr)
-library(reshape)
-library(maps)
-library(tidyverse)
-library(lubridate)
-library(dplyr)
-
 theme_set(theme_bw())
 world <- ne_countries(scale = "medium", returnclass = "sf")
-#map(database = "world")  <---- wywala mi błąd jak nie jest zakomentowane idk czemu; Rmd dziwak
 ```
 
 
-### 2.1 Miejsca najbardziej narażone na trzęsienia ziemii
+## Miejsca najbardziej narażone na trzęsienia ziemi
 
 W celu ustalenia państw najbardziej narażonych na wystąpienie zdarzenia posłużymy się analizą graficzną.
 
@@ -128,7 +129,7 @@ ggplot(most_fr_eq, aes(x = miejsce, y = częstość)) + geom_col(fill = 'hotpink
 
 Wykres \ref{barplot1} potwierdza nasze wcześniejsze przypuszczenia oparte o wykres \ref{world}. 
 
-### 2.2 Macierz korelacji
+## Macierz korelacji
 
 ```{r corrpl, echo=FALSE, fig.cap="\\label{corrpl}Macierz korelacji "}
 years <- vapply(strsplit(earthquakes$Date,"-"), `[`, 1, FUN.VALUE=character(1))
@@ -146,6 +147,7 @@ corrplot(cor(df_allnum),method = 'color',col = COL2('PuOr'))
 
 ```
 
+### PYTANIE!!! Czy to odpowiada na pytanie badawcze?
 Jak widać na macierzy \ref{corrpl}, najsilniejsza korelacja występuje pomiędzy kolumną $nst$ oraz $years$. Dzięki temu możemy stwierdzić, że  w ciągu kolejnych lat powstawało coraz więcej stacji sejsmicznych, co możemy pokazać bardziej szczegółowo, tworząc poniższy wykres: 
 
 ```{r, echo=FALSE,fig.cap="\\label{nst_years}Scatterplot zależności liczby stacji sejsmicznych od lat." }
@@ -169,7 +171,7 @@ ggplot(dfmd,aes(x=głębokość,y=siła)) + geom_point(color='hotpink')
 
 Reszta kolumn nie jest ze sobą tak silnie skorelowana i nie jest tak zaskakująca jak zależności wyżej. Większość wartości oscyluje wokół zera, więc nie będziemy im się bliżej przyglądać. 
 
-### Stosunek ilości trzęsień ziemi do kolejnych lat
+## Stosunek ilości trzęsień ziemi do kolejnych lat
 
 ```{r, echo=FALSE,fig.cap="\\label{numb_years}Wykres kolumnowy ilości trzęsień ziemi w stosunku do lat"}
 eq_to_years <- data.frame(number=sort(table(years)))
@@ -185,7 +187,7 @@ Na podstawie wykresu \ref{numb_years} można by przypuszczać, że wraz z upływ
 ??? Czy to nie jest masło maślane XDDDDDDD Btw długie zdanie napisałam, a jak na polski się miało wymyślać to pustka XD co ta matma z człowiekiem robi. (sidenote: R dalej głupi)
 
 Powiedzmy że będę nazywać je dosadnie, jakkolwiek głupio to brzmi, a więc: 
-### Badanie wpływu pory roku na liczbę trzęsień ziemi
+## Badanie wpływu pory roku na liczbę trzęsień ziemi
 
 ```{r, echo=FALSE, fig.cap="\\label{numb_season}Wykres kolumnowy ilości trzęsień ziemi w stosunku do miesiąca, w którym wystąpiły"}
 miesiace <- vapply(strsplit(earthquakes$Date,"-"), `[`, 2, FUN.VALUE=character(1))
@@ -200,7 +202,7 @@ ggplot(eq_to_months,aes(x=miesiace,y=częstość)) + geom_col(fill='hotpink') + 
 
 Na powyższym wykresie możemy zauważyć, że słupki dla wszystkich miesięcy są dość podobnej wysokości. Nie ma żadnych mocno odstających liczb, zatem wnioskujemy, że pora roku nie ma wpływu na to, czy trzęsienie ziemi wystąpi, czy nie.
 
-### Badanie Zależności między porą dnia, a liczbą trzęsień ziemi
+## Badanie Zależności między porą dnia, a liczbą trzęsień ziemi
 
 ```{r, echo=FALSE, fig.cap="\\label{numb_time}Wykres kolumnowy ilości trzęsień ziemi w stosunku do godziny, w której wystąpiły? XD"}
 time_rounded <- rep(NA,length(earthquakes$Time))
@@ -222,4 +224,5 @@ Na potrzeby zrobienia wykresu, zaokrąglone, do najbliższej całkowitej godziny
 
 ### Nwm czy dodawać te boxploty bo one nie badają niczego w sumie, tylko obrazują zakres naszych danych więc można je wrzucic może do przedstawienia danych? XDDD Bez sensu trochę ale no, to w sumie wszystko co się nadaje wrzuciłam to by można jeszcze pomyśleć czy to już czy jak, bo tak nwm czy nie mało trochę XD
 
-## 3. Wnioski
+# Wnioski
+BRAK

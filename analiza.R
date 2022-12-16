@@ -22,8 +22,9 @@ library(maps)
 library(tidyverse)
 library(lubridate)
 library(dplyr)
-map(database = "world")
+#map(database = "world")
 library(knitr)
+
 earthquakes = read.csv("Earthquakes.csv")
 
 #typy danych w tabelce
@@ -67,6 +68,15 @@ ggplot() +
 ### Correlations ###
 
 #### Pojedyncze bo tak o ####
+
+## korelacja pomiędzy liczbą trzęsień a ich sklalą <- chciałam zrobić, ale średnio mi idzie, może jutro
+transform_data <- data.frame(place=earthquakes$place, mag=earthquakes$mag)
+transform_data$place <- vapply(strsplit(earthquakes$place,","), `[`, 2, FUN.VALUE=character(1))
+transform_data <- transform_data %>% drop_na()
+transform_data <- subset(transform_data, place != " ")
+counter <- transform_data %>% count(place)
+
+
 
 ## Liczba stacji w stosunku do lat
 years <- vapply(strsplit(earthquakes$Date,"-"), `[`, 1, FUN.VALUE=character(1))
