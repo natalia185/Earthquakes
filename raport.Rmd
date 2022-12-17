@@ -92,6 +92,8 @@ W celu ustalenia państw najbardziej narażonych na wystąpienie zdarzenia posł
 ### Mapka ###
 eq_points_map_lg <- earthquakes$longitude
 eq_points_map_lat <- earthquakes$latitude
+magnitude <- earthquakes$mag 
+magnitude <- magnitude %>% drop_na()
 dfmap <- data.frame(eq_points_map_lat,eq_points_map_lg)
 dfmap <- dfmap %>% drop_na()
 
@@ -105,9 +107,9 @@ ggplot() +
   ) +
   geom_point(
     data = dfmap,
-    aes(eq_points_map_lg, eq_points_map_lat, color = 'pink'),
+    aes(eq_points_map_lg, eq_points_map_lat, color = magnitude),
     alpha = 0.7
-  ) + labs(x='', y='')
+  ) + labs(x='', y='') + scale_colour_gradient(low = "hotpink", high = "blue")
 ```
 
 Z powyższego wykresu \ref{world} i posiadanej wiedzy z zakresu geografii, jesteśmy w stanie stwierdzić, że najbardziej narażone są między innymi Chile, Japonia i inne kraje azjatyckie. 
