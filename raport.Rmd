@@ -1,5 +1,5 @@
 ---
-title: "Sprawozdanie  nr 1"
+title: "Analiza trzęsień ziemi na przestrzeni lat 1900-2013"
 author: "Klaudia Janicka 262268 i Natalia Iwańska 262270"
 date: "`r Sys.Date()`"
 output: 
@@ -135,6 +135,7 @@ most_fr_plot
 
 Wykres \ref{barplot1} potwierdza nasze wcześniejsze przypuszczenia oparte o wykres \ref{world}. 
 
+
 ## Macierz korelacji
 
 W nastepnym kroku sprawdzimy zależności pomiędzy poszczególnymi zmiennymi. W tym celu tworzymy macierz korelacji \ref{corrpl}.
@@ -154,7 +155,7 @@ df_allnum <- df_allnum %>% drop_na()
 corrplot(cor(df_allnum),method = 'color',col = COL2('PuOr'))
 ```
 
-Jak widać na macierzy \ref{corrpl}, najsilniejsza korelacja występuje pomiędzy kolumną $nst$ oraz $years$, co więcej jest ona dodatnia i wynosi w zaokrągleniu 0.78 (korelacja Spearmana). Dzięki temu możemy stwierdzić, że  w ciągu kolejnych lat powstawało coraz więcej stacji sejsmicznych, co możemy pokazać bardziej szczegółowo, tworząc poniższy wykres: 
+Jak widać na macierzy \ref{corrpl}, najsilniejsza korelacja występuje pomiędzy kolumną `nst` oraz `years`, co więcej jest ona dodatnia i wynosi w zaokrągleniu 0.78 (korelacja Spearmana). Dzięki temu możemy stwierdzić, że  w ciągu kolejnych lat powstawało coraz więcej stacji sejsmicznych, co możemy pokazać bardziej szczegółowo, tworząc poniższy wykres: 
 
 ```{r, echo=FALSE,fig.cap="\\label{nst_years}Scatterplot zależności liczby stacji sejsmicznych od lat." }
 df_nst_years <- data.frame(years,earthquakes$nst)
@@ -168,7 +169,7 @@ nst_plot <- ggplot(df_nst_years,aes(x=years,y=nst)) + geom_point(color='hotpink'
 nst_plot
 ```
 
-Zaskakiwać może fakt, że głębokość i siła trzęsienia nie są ze sobą silnie skorelowane, co możemy zobaczyć na wykresie poniżej: 
+Zaskakiwać może fakt, że głębokość i siła trzęsienia nie są ze sobą silnie skorelowane, współczynnik korelacji Spearmana dla tych wielkości wynosi bowiem zaledwie 0.08. Dodatkowo fakt ten możemy zaobserwować na wykresie \ref{depth_mag} zamieszczonym poniżej.
 
 ```{r, echo=FALSE, fig.cap="\\label{depth_mag}Scatterplot zależności siły trzęsienia od jego głębokości", fig.pos="H"}
 dfmd <- data.frame(earthquakes$mag,earthquakes$depth)
@@ -176,12 +177,52 @@ colnames(dfmd)[1] <- 'siła'
 colnames(dfmd)[2] <- 'głębokość'
 dfmd <- dfmd %>% drop_na()
 
+cor_mag_depth <- cor(as.numeric(dfmd$siła), as.numeric(dfmd$głębokość), method='spearman')
+
 depth_mag_plot <- ggplot(dfmd,aes(x=głębokość,y=siła)) + geom_point(color='hotpink')
 
 depth_mag_plot
 ```
 
+Nie widzimy tu żadnego trendu, który mógły wskazywać na zależność między danymi.(Czy to ma sens?)
+
 Reszta kolumn nie jest ze sobą tak silnie skorelowana i nie jest tak zaskakująca jak zależności wyżej. Większość wartości oscyluje wokół zera, więc nie będziemy im się bliżej przyglądać. 
+
+
+## Średnia magnituda a miejsce wystąpienia trzęsienia (?czy to ma sens?)
+
+W tabeli \ref{tabela2} zawartej poniżej sprawdzamy średnią siłę trzęsienia dla każdego miejsca, w którym ono wystąpiło.
+
+```{r, echo=FALSE, results='asis'}
+miejsce <- vapply(strsplit(earthquakes$place,","), `[`, 2, FUN.VALUE=character(1))
+
+df_Emag <- data.frame(miejsce=miejsce, mag=earthquakes$mag) %>% drop_na()
+df_Emag <- subset(df_Emag, miejsce != " ") 
+df_Emag <- df_Emag[order(df_Emag$miejsce),]
+num <- df_Emag %>% count(miejsce) 
+
+df <- data.frame()
+for( i in 1:length(num$miejsce)){
+  col <- c()
+  for( j in 1:length(df_Emag$miejsce)){
+    if(num$miejsce[i] == df_Emag$miejsce[j]){
+      col <- append(col, df_Emag$mag[j])
+    }
+  }
+  meancol <- mean(col)
+  df <- rbind(df, meancol)
+}
+df <- cbind(df, num$miejsce)
+colnames(df) <- c('średnia magnituda', 'miejsce')
+df <- rev(df)
+
+df2 <- data.frame(df, ilość=num$n)
+cor_mag <- cor(df2$średnia.magnituda, df2$ilość, method='spearman')
+
+kable(df, caption="\\label{tabela2}Wartość średniej siły dla poczczegolnych miejsc.")
+```
+
+Ponadto wyliczając korelację Spearmana pomiędzy średnią magnitudą a ilością wystąpień zdarzenia w danym miejscu otrzymujemy wynik -0.04, co wskazuje na ujemną korelację między tymi wartościami. Jednak jego wartość jest bardzo bliska zera co pozwala nam przypuszczać, że między danymi nie ma związku liniowego. `(idk, ale tak myślę)`
 
 ## Stosunek ilości trzęsień ziemi do kolejnych lat
 
@@ -213,11 +254,11 @@ ggplot(eq_to_months,aes(x=miesiące,y=częstość)) + geom_col(fill='hotpink') +
 
 Na powyższym wykresie możemy zauważyć, że słupki dla wszystkich miesięcy są dość podobnej wysokości. Nie ma żadnych mocno odstających liczb, zatem wnioskujemy, że pora roku nie ma wpływu na to, czy trzęsienie ziemi wystąpi, czy nie.
 
-## Badanie Zależności między porą dnia, a liczbą trzęsień ziemi
+## Badanie zależności między porą dnia, a liczbą trzęsień ziemi
 
-W ceku zbadania owej zależnośi równie posłużymy się wykresem słupkowym. Na potrzeby zrobienia wykresu, zaokrąglone, do najbliższej całkowitej godziny, zostały zmienne z kolumny `Time`.
+W celu zbadania owej zależnośi również posłużymy się wykresem słupkowym. Na potrzeby zrobienia wykresu, zaokrąglone, do najbliższej całkowitej godziny, zostały zmienne z kolumny `Time`.
 
-```{r, echo=FALSE, fig.cap="\\label{numb_time}Wykres kolumnowy ilości trzęsień ziemi w stosunku do godziny, w której wystąpiły? XD"}
+```{r, echo=FALSE, fig.cap="\\label{numb_time}Wykres kolumnowy ilości trzęsień ziemi w stosunku do godziny, w której wystąpiły?"}
 time_rounded <- rep(NA,length(earthquakes$Time))
 for (i in 1:length(earthquakes$Time)){
   date_time <- paste(earthquakes$Date[i],earthquakes$Time[i])
@@ -244,4 +285,14 @@ Tak jak przy badaniu wpływu pory roku, na wykresie \ref{numb_time} możemy zauw
 
 # Wnioski
 
-Przechodząc do podsumowania naszej pracy przeprowadzona przez nas analiza dla danych na temat trzęsień ziemi z lat 1900-2013 doprowadziła nas do następujących wniosków. Po pierwsze odpowiadając na pytanie badawcze postawione na początku pracy możemy stwierdzić, że najbardziej narażone na występowanie trzęsień ziemi były regiony azjatyckie, Oceania jak również zachodnie wybrzeża Ameryki Południowej oraz Ameryki Północnej (\ref{world}). Stąd wniosek, że to właśnie te regiony są najbardziej narażone. Jeśli jednak spojrzymy na konkretne państwa to zgodnie z wykresem \ref{barplot1} w czołowej trójce plasują się takie państwa jak Indonezja, Papua-Nowa Gwinea i Japonia. Idąc dalej...
+Przechodząc do podsumowania naszej pracy przeprowadzona przez nas analiza dla danych na temat trzęsień ziemi z lat 1900-2013 doprowadziła nas do następujących wniosków.
+
+Po pierwsze odpowiadając na pytanie badawcze postawione na początku możemy stwierdzić, że najbardziej narażone na występowanie trzęsień ziemi były regiony azjatyckie, Oceania, jak również zachodnie wybrzeża Ameryki Południowej oraz Ameryki Północnej (\ref{world}). Stąd wniosek, że to właśnie te regiony są najbardziej narażone. Jeśli jednak spojrzymy na konkretne państwa to zgodnie z wykresem \ref{barplot1} w czołowej trójce plasują się takie kraje jak Indonezja, Papua-Nowa Gwinea i Japonia. Warto tutaj zaznaczyć, że wyniki te mogą być delikatnie zakłamane `(wtf... brzmi dziko)` ze względu na ilość stacji sejsmicznych użytych do zlokalizowania zdarzenia. Zgodnie z wykresem \ref{nst_years} z biegiem lat ośrodków takich przybywało, co pozwalało dokładniej określić położenie niż w latach wcześniejszych. Jednak nie uważamy, aby miało to znaczący wpływ na otrzymane wyniki.`(Czy ja właśnie sobie zaprzeczyłam? Być może XD)`
+
+Idąc dalej, zgodnie z macierzą korelacji \ref{corrpl} jak i późniejszą analizą nie widzimy znaczących korelacji w danych. Co może zaskakiwać głębokość odnotowanego zdarzenia nie jest znacząco zależna od jego siły, można powiedzieć, że jest to nieintuicyjny wynik. `(włączył mi się polski, ok?)`
+
+Badając średnią siłę trzęsienia (tabela \ref{tabela2}) i porównując ją dla 12 najbardziej narażonych miejsc (wykres \ref{barplot1}) możemy stwierdzić, że średnie wartości są do siebie zbiżone. Dodatkowo korelacja dla wszystkich danych jest bliska zera `(Tylko co nam to daje?)`
+
+Kolejne analizy nie wykazały żadnych zależności związanych z czasem czy też porą roku, zatem możemy stąd wywnioskować, że czynniki te nie mają wpływu na badane zjawisko.
+
+Reasumując nasze rozważania trzęsienia ziemi są zjawiskiem nieprzewidywalnym i zależnym w głównej mierze od położenia geograficznego. Można przypuszczać, że zaczęły występować częśćj niż miało to miejsce w poprzednich latach, jednak nie możemy tego bezpośrednio stwierdzić z uwagi na liczbę stacji badawczych, których liczba powiększała się, a co za tym idzie obszar pomiarów również ulegał zwiększeniu. Warto też zaznaczyć, że dane poddane analizie opisywały trzęsienia o magnitudzie powyżej 6, czyli nasze wnioski nie muszą być prawdziwe w ogólnym przypadku. `(O ile w ogóle są XD)`

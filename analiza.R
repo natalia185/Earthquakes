@@ -31,6 +31,28 @@ earthquakes = read.csv("Earthquakes.csv")
 df_type <- sapply(earthquakes, class)
 kable(df_type, col.names=c('typ'))
 
+# E(mag) dla miejsc
+place <- vapply(strsplit(earthquakes$place,","), `[`, 2, FUN.VALUE=character(1))
+
+df_Emag <- data.frame(miejsce=miejsce, mag=earthquakes$mag) %>% drop_na()
+df_Emag <- subset(df_Emag, miejsce != " ") 
+df_Emag <- df_Emag[order(df_Emag$miejsce),]
+num <- df_Emag %>% count(miejsce) 
+
+df <- data.frame()
+for( i in 1:length(num$miejsce)){
+  col <- c()
+  for( j in 1:length(df_Emag$miejsce)){
+    if(num$miejsce[i] == df_Emag$miejsce[j]){
+      col <- append(col, df_Emag$mag[j])
+    }
+  }
+  meancol <- mean(col)
+  df <- rbind(df, meancol)
+}
+df <- cbind(df, num$miejsce)
+colnames(df) <- c('Emag', 'miejsce')
+
 ### Histogram ###
 # 12 najczęstszych miejsc wybrane #
 miejsce <- vapply(strsplit(earthquakes$place,","), `[`, 2, FUN.VALUE=character(1))
