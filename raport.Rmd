@@ -137,7 +137,7 @@ Wykres \ref{barplot1} potwierdza nasze wcześniejsze przypuszczenia oparte o wyk
 
 ## Macierz korelacji
 
-W nastepnym kroku sprawdzimy zależności pomiędzy poszczególnymi zmiennywmi. W tym celu tworzymy macierz korelacji \ref{corrpl}.
+W nastepnym kroku sprawdzimy zależności pomiędzy poszczególnymi zmiennymi. W tym celu tworzymy macierz korelacji \ref{corrpl}.
 
 ```{r corrpl, echo=FALSE, fig.cap="\\label{corrpl}Macierz korelacji "}
 years <- vapply(strsplit(earthquakes$Date,"-"), `[`, 1, FUN.VALUE=character(1))
