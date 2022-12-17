@@ -36,12 +36,13 @@ library(tidyverse)
 
 # Wstęp
 
-Niniejszy raport stanowi analizę danych rzeczywistych dotyczących trzęsień ziemi o skali wydarzenia powyżej 6 na przestrzeni lat 1900-2013. Dane pochodzą ze strony [kaggle.com](https://www.kaggle.com/datasets/varunsaikanuri/earthquakes-from-1900-2013). Zgodnie z informacjami zawartymi na podanej stronie źródłem danych jest United States Geological Survey.
+Niniejszy raport stanowi analizę danych rzeczywistych dotyczących trzęsień ziemi o magnitudzie powyżej 6 na przestrzeni lat 1900-2013. Dane pochodzą ze strony [**kaggle.com**](https://www.kaggle.com/datasets/varunsaikanuri/earthquakes-from-1900-2013). Zgodnie z informacjami zawartymi na podanej stronie źródłem danych jest United States Geological Survey.
 
 Celem naszej analizy jest odpowiedzenie na pytanie jakie regiony są najbardziej narażone, zbadanie jakie czynniki mają wpływ na występowanie trzęsień ziemi oraz, czy poszczególne cechy trzęsienia są ze sobą powiązane. 
 
 
 ## Opis zmiennych
+
 Typy danych występujących w poszczególnych kolumnach:
 
 ```{r, echo=FALSE, results='asis'}
@@ -51,30 +52,30 @@ kable(df_type, col.names=c('typ'), caption="\\label{tabela}Typy zmiennych dla da
 ```
 Typy zawarte w tabeli \ref{tabela} oznaczają odpowiednio:
 
-integer - typ całkowity, który przyjmuje wartości całkowite,
+`integer` - typ całkowity, który przyjmuje wartości całkowite,
 
-numeric - typ zmiennoprzecinkowy, który przyjmuje wartości ułamkowe,
+`numeric` - typ zmiennoprzecinkowy, który przyjmuje wartości ułamkowe,
 
-character - typ znakowy, przechowuje łańcuchy tekstowe.
+`character` - typ znakowy, przechowuje łańcuchy tekstowe.
 
 Do analizy wykorzystujemy dane zawarte w kolumnach:
 
-- $place$ - tekstowy opis regionu geograficznego w pobliżu zdarzenia;
-- $latitude$ - szerokość geograficzna podana w stopniach, przyjmuje wartości z przedziału $[-90, 90]$, gdzie wartości ujemne oznaczają południowe szerokości;
-- $longitude$ - długość geograficzna podana w stopniach, przyjmuje wartości z przedziału $[-180, 180]$, gdzie wartości ujemne dotyczą zachodnich długości;
-- $mag$ - skala zdarzenia;
-- $nst$ - liczba stacji sejsmicznych użytych do określenia lokalizacji trzęsienia;
-- $time$ - czas wystapienia trzęsienia;
-- $depth$ - głębokość zdarzenia w kilometrach;
-- $date$ - data zajścia zdarzenia;
+- `place` - tekstowy opis regionu geograficznego w pobliżu zdarzenia;
+- `latitude` - szerokość geograficzna podana w stopniach, przyjmuje wartości z przedziału $[-90, 90]$, gdzie wartości ujemne oznaczają południowe szerokości;
+- `longitude` - długość geograficzna podana w stopniach, przyjmuje wartości z przedziału $[-180, 180]$, gdzie wartości ujemne dotyczą zachodnich długości;
+- `mag` - magnituda, skala zdarzenia;
+- `nst` - liczba stacji sejsmicznych użytych do określenia lokalizacji trzęsienia;
+- `time` - czas wystapienia trzęsienia;
+- `depth` - głębokość zdarzenia w kilometrach;
+- `date` - data zajścia zdarzenia;
 
 gdzie jako zdarzenie rozumiemy wystąpienie trzęsienia ziemi.
 
-Jako zmienne kategoryczne uznajemy zmienną $place$, która po transformacji wskazuje na kraj, w którym zdarzenie miało miejsce oraz $date$, która po transformacji oznacza miesiąc zajścia zdarzenia. Pozostałe zmienne to zmiennne ciągłe. (Tak myślę, ale może być inaczej;;; brzmi sensownie)
-
+Jako zmienne kategoryczne uznajemy zmienną `place`, która po transformacji wskazuje na kraj, w którym zdarzenie miało miejsce oraz `date`, która po transformacji oznacza miesiąc zajścia zdarzenia. Pozostałe zmienne to zmiennne ciągłe.
 
 ## Obsługa błędów
-Wiersze z brakami danych usuwamy za pomocą funkcji drop_na() z biblioteki dplyr.
+
+Wiersze z brakami danych usuwamy za pomocą funkcji `drop_na()` z biblioteki `dplyr`.
 
 # Analiza danych
 
@@ -86,20 +87,19 @@ world <- ne_countries(scale = "medium", returnclass = "sf")
 
 ## Miejsca najbardziej narażone na trzęsienia ziemi
 
-W celu ustalenia państw najbardziej narażonych na wystąpienie zdarzenia posłużymy się analizą graficzną.
+W celu ustalenia regionów najbardziej narażonych na wystąpienie zdarzenia posłużymy się analizą graficzną.
 
 ```{r echo=FALSE, fig.cap="\\label{world}Mapa świata z naniesionymi miejscami trzęsień ziemi"}
 ### Mapka ###
-eq_points_map_lg <- earthquakes$longitude
-eq_points_map_lat <- earthquakes$latitude
-magnitude <- earthquakes$mag 
-magnitude <- magnitude %>% drop_na()
-dfmap <- data.frame(eq_points_map_lat,eq_points_map_lg)
-dfmap <- dfmap %>% drop_na()
+
+dfmap <- data.frame(longitude=earthquakes$longitude, 
+                    latitude=earthquakes$latitude,
+                    mag=earthquakes$mag)
+dfmap <- dfmap %>% drop_na(mag)
 
 world <- map_data("world")
 
-ggplot() +
+world_map <- ggplot() +
   geom_map(
     data = world, map = world,
     aes(long, lat, map_id = region),
@@ -107,12 +107,14 @@ ggplot() +
   ) +
   geom_point(
     data = dfmap,
-    aes(eq_points_map_lg, eq_points_map_lat, color = magnitude),
+    aes(longitude, latitude, color = mag),
     alpha = 0.7
   ) + labs(x='', y='') + scale_colour_gradient(low = "hotpink", high = "blue")
+
+world_map
 ```
 
-Z powyższego wykresu \ref{world} i posiadanej wiedzy z zakresu geografii, jesteśmy w stanie stwierdzić, że najbardziej narażone są między innymi Chile, Japonia i inne kraje azjatyckie. 
+Z powyższego wykresu \ref{world} i posiadanej wiedzy z zakresu geografii, jesteśmy w stanie stwierdzić, że najbardziej narażone są między innymi Chile czy  Japonia oraz inne kraje azjatyckie. 
 
 ```{r echo=FALSE, fig.cap="\\label{barplot1}Wykres słupkowy dla 12 najbardziej narażonych miejsc",fig.width=5, fig.height=3.5}
 # 12 najczęstszych miejsc wybrane #
@@ -123,15 +125,19 @@ colnames(most_fr_eq)[1] <- 'miejsce'
 colnames(most_fr_eq)[2] <- 'częstość'
 most_fr_eq <- most_fr_eq %>% drop_na()
 
-ggplot(most_fr_eq, aes(x = miejsce, y = częstość)) + geom_col(fill = 'hotpink') + 
+most_fr_plot <- ggplot(most_fr_eq, aes(x = miejsce, y = częstość)) + geom_col(fill = 'hotpink') +
   theme(axis.text.x = element_text(angle = 90)) + geom_text(aes(label = częstość), nudge_y = -20, col='white') +
   labs(x='kraj', y='liczba wystąpień') + 
   ggtitle('Wykres słupkowy dla 12 najbardziej narażonych miejsc')
+
+most_fr_plot
 ```
 
 Wykres \ref{barplot1} potwierdza nasze wcześniejsze przypuszczenia oparte o wykres \ref{world}. 
 
 ## Macierz korelacji
+
+W nastepnym kroku sprawdzimy zależności pomiędzy poszczególnymi zmiennywmi. W tym celu tworzymy macierz korelacji \ref{corrpl}.
 
 ```{r corrpl, echo=FALSE, fig.cap="\\label{corrpl}Macierz korelacji "}
 years <- vapply(strsplit(earthquakes$Date,"-"), `[`, 1, FUN.VALUE=character(1))
@@ -146,18 +152,20 @@ df_allnum <- transform(df_allnum,as.numeric(years))
 df_allnum <- df_allnum %>% drop_na()
 
 corrplot(cor(df_allnum),method = 'color',col = COL2('PuOr'))
-
 ```
 
-### PYTANIE!!! Czy to odpowiada na pytanie badawcze?
-Jak widać na macierzy \ref{corrpl}, najsilniejsza korelacja występuje pomiędzy kolumną $nst$ oraz $years$. Dzięki temu możemy stwierdzić, że  w ciągu kolejnych lat powstawało coraz więcej stacji sejsmicznych, co możemy pokazać bardziej szczegółowo, tworząc poniższy wykres: 
+Jak widać na macierzy \ref{corrpl}, najsilniejsza korelacja występuje pomiędzy kolumną $nst$ oraz $years$, co więcej jest ona dodatnia i wynosi w zaokrągleniu 0.78 (korelacja Spearmana). Dzięki temu możemy stwierdzić, że  w ciągu kolejnych lat powstawało coraz więcej stacji sejsmicznych, co możemy pokazać bardziej szczegółowo, tworząc poniższy wykres: 
 
 ```{r, echo=FALSE,fig.cap="\\label{nst_years}Scatterplot zależności liczby stacji sejsmicznych od lat." }
 df_nst_years <- data.frame(years,earthquakes$nst)
 colnames(df_nst_years)[2] <- 'nst'
 df_nst_years <- df_nst_years %>% drop_na()
 
-ggplot(df_nst_years,aes(x=years,y=nst)) + geom_point(color='hotpink') +labs(x='lata', y='liczba stacji sejsmicznych') +  scale_x_discrete(breaks=seq(1900, 2013, 10))
+year_nst_cor <- cor(as.numeric(df_nst_years$years), as.numeric(df_nst_years$nst), method='spearman')
+
+nst_plot <- ggplot(df_nst_years,aes(x=years,y=nst)) + geom_point(color='hotpink') +labs(x='lata', y='liczba stacji sejsmicznych') +  scale_x_discrete(breaks=seq(1900, 2013, 10))
+
+nst_plot
 ```
 
 Zaskakiwać może fakt, że głębokość i siła trzęsienia nie są ze sobą silnie skorelowane, co możemy zobaczyć na wykresie poniżej: 
@@ -168,7 +176,9 @@ colnames(dfmd)[1] <- 'siła'
 colnames(dfmd)[2] <- 'głębokość'
 dfmd <- dfmd %>% drop_na()
 
-ggplot(dfmd,aes(x=głębokość,y=siła)) + geom_point(color='hotpink')
+depth_mag_plot <- ggplot(dfmd,aes(x=głębokość,y=siła)) + geom_point(color='hotpink')
+
+depth_mag_plot
 ```
 
 Reszta kolumn nie jest ze sobą tak silnie skorelowana i nie jest tak zaskakująca jak zależności wyżej. Większość wartości oscyluje wokół zera, więc nie będziemy im się bliżej przyglądać. 
@@ -186,25 +196,26 @@ ggplot(eq_to_years,aes(x=lata,y=częstość)) + geom_col(color='hotpink') + scal
 
 Na podstawie wykresu \ref{numb_years} można by przypuszczać, że wraz z upływem lat, przybywało trzęsień ziemi, jednak musimy wziąć pod uwagę fakt, że w tym samym czasie przybywało stacji sejsmicznych, które takie zdarzenia rejestrowały, co pokazaliśmy na wykresie \ref{nst_years}. Zatem nie możemy jednoznacznie stwierdzić, czy liczba trzęsień ziemi zmieniała się w konretny sposób. 
 
-??? Czy to nie jest masło maślane XDDDDDDD Btw długie zdanie napisałam, a jak na polski się miało wymyślać to pustka XD co ta matma z człowiekiem robi. (sidenote: R dalej głupi)
-
-Powiedzmy że będę nazywać je dosadnie, jakkolwiek głupio to brzmi, a więc: 
 ## Badanie wpływu pory roku na liczbę trzęsień ziemi
+
+Kolejnym aspektem jaki poddamy analizie jest wpływ pór roku na ilość zdarzeń.
 
 ```{r, echo=FALSE, fig.cap="\\label{numb_season}Wykres kolumnowy ilości trzęsień ziemi w stosunku do miesiąca, w którym wystąpiły"}
 miesiace <- vapply(strsplit(earthquakes$Date,"-"), `[`, 2, FUN.VALUE=character(1))
 
 eq_to_months <- data.frame(number=table(miesiace))
-colnames(eq_to_months)[1] <- 'miesiace'
+colnames(eq_to_months)[1] <- 'miesiące'
 colnames(eq_to_months)[2] <- 'częstość'
 eq_to_months <- eq_to_months %>% drop_na()
 
-ggplot(eq_to_months,aes(x=miesiace,y=częstość)) + geom_col(fill='hotpink') + theme(axis.text.x = element_text(angle = 90))
+ggplot(eq_to_months,aes(x=miesiące,y=częstość)) + geom_col(fill='hotpink') + theme(axis.text.x = element_text(angle = 90))
 ```
 
 Na powyższym wykresie możemy zauważyć, że słupki dla wszystkich miesięcy są dość podobnej wysokości. Nie ma żadnych mocno odstających liczb, zatem wnioskujemy, że pora roku nie ma wpływu na to, czy trzęsienie ziemi wystąpi, czy nie.
 
 ## Badanie Zależności między porą dnia, a liczbą trzęsień ziemi
+
+W ceku zbadania owej zależnośi równie posłużymy się wykresem słupkowym. Na potrzeby zrobienia wykresu, zaokrąglone, do najbliższej całkowitej godziny, zostały zmienne z kolumny `Time`.
 
 ```{r, echo=FALSE, fig.cap="\\label{numb_time}Wykres kolumnowy ilości trzęsień ziemi w stosunku do godziny, w której wystąpiły? XD"}
 time_rounded <- rep(NA,length(earthquakes$Time))
@@ -218,13 +229,19 @@ colnames(eq_to_time)[1] <- 'czas'
 colnames(eq_to_time)[2] <- 'częstość'
 eq_to_time <- eq_to_time %>% drop_na()
 
-ggplot(eq_to_time,aes(x=czas,y=częstość)) + geom_col(fill='hotpink') + theme(axis.text.x = element_text(angle = 90)) +
+cor_time_freq <- cor(as.numeric(eq_to_time$częstość), as.numeric(eq_to_time$czas), 
+                     method='spearman')
+
+
+time_plot <- ggplot(eq_to_time,aes(x=czas,y=częstość)) + geom_col(fill='hotpink') + theme(axis.text.x = element_text(angle = 90)) +
   labs(y='liczba wystąpień')
+
+time_plot
 ```
 
-Na potrzeby zrobienia wykresu, zaokrąglone, do najbliższej całkowitej godziny, zostały zmienne z kolumny $Time$. Tak jak przy badaniu wpływu pory roku, możemy zauważyć, że wartości znów są do siebie zbliżone, a zatem pora dnia również nie ma wpływu na występowanie trzęsień ziemi.
+Tak jak przy badaniu wpływu pory roku, na wykresie \ref{numb_time} możemy zauważyć, że wartości znów są do siebie zbliżone. Dodatkowo wartość współczynnika korelacji Spearmana dla tych danych wynosi w zaokrągleniu 0.01, co jest wartością bliską zera, a zatem pora dnia również nie ma wpływu na występowanie trzęsień ziemi.
 
-### Nwm czy dodawać te boxploty bo one nie badają niczego w sumie, tylko obrazują zakres naszych danych więc można je wrzucic może do przedstawienia danych? XDDD Bez sensu trochę ale no, to w sumie wszystko co się nadaje wrzuciłam to by można jeszcze pomyśleć czy to już czy jak, bo tak nwm czy nie mało trochę XD
 
 # Wnioski
-BRAK
+
+Przechodząc do podsumowania naszej pracy przeprowadzona przez nas analiza dla danych na temat trzęsień ziemi z lat 1900-2013 doprowadziła nas do następujących wniosków. Po pierwsze odpowiadając na pytanie badawcze postawione na początku pracy możemy stwierdzić, że najbardziej narażone na występowanie trzęsień ziemi były regiony azjatyckie, Oceania jak również zachodnie wybrzeża Ameryki Południowej oraz Ameryki Północnej (\ref{world}). Stąd wniosek, że to właśnie te regiony są najbardziej narażone. Jeśli jednak spojrzymy na konkretne państwa to zgodnie z wykresem \ref{barplot1} w czołowej trójce plasują się takie państwa jak Indonezja, Papua-Nowa Gwinea i Japonia. Idąc dalej...

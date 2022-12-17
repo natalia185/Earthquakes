@@ -38,7 +38,6 @@ miejsce <- vapply(strsplit(earthquakes$place,","), `[`, 2, FUN.VALUE=character(1
 most_fr_eq <- data.frame(number=rev(sort(table(miejsce)))[1:12])
 colnames(most_fr_eq)[1] <- 'miejsce'
 colnames(most_fr_eq)[2] <- 'częstość'
-most_fr_eq <- most_fr_eq %>% drop_na()
 
 ggplot(most_fr_eq, aes(x = miejsce, y = częstość)) + geom_col(fill = 'hotpink') + 
   theme(axis.text.x = element_text(angle = 90)) + geom_text(aes(label = częstość), nudge_y = -20, col='white') +
@@ -48,11 +47,8 @@ ggplot(most_fr_eq, aes(x = miejsce, y = częstość)) + geom_col(fill = 'hotpink
 ### Mapka ###
 eq_points_map_lg <- earthquakes$longitude
 eq_points_map_lat <- earthquakes$latitude
-magnitude <- earthquakes$mag 
-magnitude <- magnitude %>% drop_na()
 dfmap <- data.frame(eq_points_map_lat,eq_points_map_lg)
 dfmap <- dfmap %>% drop_na()
-magnitude
 
 world <- map_data("world")
 
@@ -64,28 +60,46 @@ ggplot() +
   ) +
   geom_point(
     data = dfmap,
-    aes(eq_points_map_lg, eq_points_map_lat, colour=magnitude),
+    aes(eq_points_map_lg, eq_points_map_lat, color = 'red'),
+    alpha = 0.7
+  ) + labs(x='', y='')
+
+
+### Mapka 2.0 ###
+dfmap <- data.frame(longitude=earthquakes$longitude, 
+                    latitude=earthquakes$latitude,
+                    mag=earthquakes$mag)
+dfmap <- dfmap %>% drop_na(mag)
+
+world <- map_data("world")
+
+world_map <- ggplot() +
+  geom_map(
+    data = world, map = world,
+    aes(long, lat, map_id = region),
+    color = "white", fill = "lightgray", size = 0.1
+  ) +
+  geom_point(
+    data = dfmap,
+    aes(longitude, latitude, color = mag),
     alpha = 0.7
   ) + labs(x='', y='') + scale_colour_gradient(low = "hotpink", high = "blue")
+
+world_map
 
 
 ### Correlations ###
 
 #### Pojedyncze bo tak o ####
 
-## korelacja pomiędzy liczbą trzęsień a ich skalą <- chciałam zrobić, ale średnio mi idzie, może jutro
+## korelacja pomiędzy liczbą trzęsień a ich sklalą <- chciałam zrobić, ale średnio mi idzie, może jutro
 transform_data <- data.frame(place=earthquakes$place, mag=earthquakes$mag)
 transform_data$place <- vapply(strsplit(earthquakes$place,","), `[`, 2, FUN.VALUE=character(1))
 transform_data <- transform_data %>% drop_na()
 transform_data <- subset(transform_data, place != " ")
 counter <- transform_data %>% count(place)
-counter
-transform_data
 
-test4 <- table(transform_data)
-test4
-
-test5 <- data.frame(test4) ##Tabelka z place, mag i ile razy wystąpiło trzęsienie w danym obszarze o danej sile
+ggplot(transform_data, aes(x=place, y=mag)) + geom_boxplot() +coord_flip()
 
 
 ## Liczba stacji w stosunku do lat
@@ -95,6 +109,8 @@ colnames(df_nst_years)[2] <- 'nst'
 df_nst_years <- df_nst_years %>% drop_na()
 
 ggplot(df_nst_years,aes(x=years,y=nst)) + geom_point(color='hotpink') + scale_x_discrete(breaks=seq(1900, 2013, 10))
+
+cor(as.numeric(df_nst_years$years), as.numeric(df_nst_years$nst))
 
 # Z czasem powstało więcej stacji badawczych trzęsienia ziemi :) 
 
@@ -132,6 +148,8 @@ eq_to_time <- eq_to_time %>% drop_na()
 
 ggplot(eq_to_time,aes(x=czas,y=częstość)) + geom_col(fill='hotpink') + theme(axis.text.x = element_text(angle = 90)) +
   labs(y='liczba wystąpień')
+
+cor(as.numeric(eq_to_time$częstość), as.numeric(eq_to_time$czas), method='spearman')
 
 #Czyli pora dnia też nie, sad :/
 
